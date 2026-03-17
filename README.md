@@ -1,5 +1,10 @@
 # pgstream
 
+[![PyPI version](https://img.shields.io/pypi/v/pgstream)](https://pypi.org/project/pgstream/)
+[![Python](https://img.shields.io/pypi/pyversions/pgstream)](https://pypi.org/project/pgstream/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/Kamalesh-Kavin/pgstream/actions/workflows/ci.yml/badge.svg)](https://github.com/Kamalesh-Kavin/pgstream/actions/workflows/ci.yml)
+
 A production-grade Python SDK that watches Postgres tables via **logical replication (CDC)** and syncs row changes to **vector stores** in real time.
 
 ```
