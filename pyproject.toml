@@ -1,7 +1,7 @@
 [project]
 name = "pgstream"
 version = "0.1.0"
-description = "Production-grade Python SDK for Postgres CDC: watch tables via logical replication and sync changes to vector stores (pgvector, Qdrant)."
+description = "Python SDK for Postgres CDC: watch tables via logical replication and sync changes to vector stores (pgvector, Qdrant)."
 readme = "README.md"
 authors = [
     { name = "Kamalesh-Kavin", email = "kamalesh.s7316@gmail.com" }
