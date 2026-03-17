@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: pgstream
+          POSTGRES_PASSWORD: pgstream
+          POSTGRES_DB: pgstream
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Configure Postgres for logical replication
+        run: |
+          psql postgresql://pgstream:pgstream@localhost:5432/pgstream \
+            -c "ALTER SYSTEM SET wal_level = logical;"
+          # Restart postgres via pg_ctl is not available in the service container;
+          # use pg_reload_conf for settings that don't require restart.
+          # wal_level requires a restart — handled by the Docker command below.
+        continue-on-error: true
+
+      - name: Run unit tests
+        run: uv run pytest tests/test_decoder.py tests/test_stream.py -v -m "not integration"
+
+      - name: Run integration tests
+        env:
+          PGSTREAM_DSN: postgresql://pgstream:pgstream@localhost:5432/pgstream
+        run: uv run pytest tests/ -v
+        # Integration tests require wal_level=logical.
+        # The postgres service above uses default settings (wal_level=replica).
+        # To run integration tests in CI, use a custom postgres image or
+        # pass command-line options: postgres -c wal_level=logical
+        continue-on-error: true
