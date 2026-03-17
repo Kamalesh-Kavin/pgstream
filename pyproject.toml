@@ -1,0 +1,54 @@
+[project]
+name = "pgstream"
+version = "0.1.0"
+description = "Production-grade Python SDK for Postgres CDC: watch tables via logical replication and sync changes to vector stores (pgvector, Qdrant)."
+readme = "README.md"
+authors = [
+    { name = "Kamalesh-Kavin", email = "kamalesh.s7316@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    # psycopg2 is the ONLY library in Python with full logical replication support.
+    # asyncpg does not support the replication protocol; psycopg3 doesn't expose it
+    # publicly yet. This is a hard dependency — it's what powers all WAL streaming.
+    "psycopg2-binary>=2.9.11",
+]
+
+[project.optional-dependencies]
+# Install with: pip install pgstream[pgvector]
+pgvector = [
+    # asyncpg is used by PgVectorSink for async, non-blocking Postgres writes.
+    # It is NOT used for the replication connection (that uses psycopg2).
+    "asyncpg>=0.30.0",
+]
+
+# Install with: pip install pgstream[qdrant]
+qdrant = [
+    "qdrant-client>=1.14.0",
+]
+
+# Install with: pip install pgstream[all]
+all = [
+    "asyncpg>=0.30.0",
+    "qdrant-client>=1.14.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.10,<0.11.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    # asyncpg needed in tests (PgVectorSink tests require it)
+    "asyncpg>=0.30.0",
+]
+
+[tool.pytest.ini_options]
+# Default asyncio mode: use "auto" so async test functions are collected automatically.
+asyncio_mode = "auto"
+# Register custom marks to suppress PytestUnknownMarkWarning
+markers = [
+    "integration: marks tests that require a live Postgres instance (deselect with -m 'not integration')",
+]
