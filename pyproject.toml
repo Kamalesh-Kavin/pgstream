@@ -3,13 +3,31 @@ name = "pgstream"
 version = "0.2.0"
 description = "Python SDK for Postgres CDC: watch tables via logical replication and sync changes to vector stores (pgvector, Qdrant)."
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Kamalesh-Kavin", email = "kamalesh.s7316@gmail.com" }
+]
+keywords = ["postgres", "cdc", "change-data-capture", "replication", "pgvector", "qdrant", "wal"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
 ]
 requires-python = ">=3.13"
 dependencies = [
     "psycopg2-binary>=2.9.11",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Kamalesh-Kavin/pgstream"
+Repository = "https://github.com/Kamalesh-Kavin/pgstream"
+Issues = "https://github.com/Kamalesh-Kavin/pgstream/issues"
+Changelog = "https://github.com/Kamalesh-Kavin/pgstream/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/Kamalesh-Kavin/pgstream/tree/main/docs"
 
 [project.scripts]
 # Registers the `pgstream` command when the package is pip-installed.

@@ -7,6 +7,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [Unreleased]
+
+---
+
+## [0.2.0] - 2025-03-19
+
+### Added
+
+- `pgstream` CLI entry-point (`pgstream --help`, `--version`, `info`, `quickstart`, `config`)
+  registered via `[project.scripts]` so it is available immediately after `pip install pgstream`.
+- `sample_app.py` — 42/42 mock-based smoke tests covering public API, `ChangeEvent`,
+  `Sink` ABC, `PGStream` guard-rails, WAL decoder, and CLI. No live Postgres required.
+- `.github/workflows/publish.yml` — tag-triggered PyPI publish workflow
+  (unit tests gate → `uv build` → `uv publish`).
+- `license`, `classifiers`, `keywords`, and `[project.urls]` added to `pyproject.toml`
+  so PyPI renders the package correctly.
+
+---
+
 ## [0.1.0] - 2025-01-01
 
 ### Added
