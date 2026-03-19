@@ -1,6 +1,6 @@
 [project]
 name = "pgstream"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python SDK for Postgres CDC: watch tables via logical replication and sync changes to vector stores (pgvector, Qdrant)."
 readme = "README.md"
 authors = [
@@ -10,6 +10,11 @@ requires-python = ">=3.13"
 dependencies = [
     "psycopg2-binary>=2.9.11",
 ]
+
+[project.scripts]
+# Registers the `pgstream` command when the package is pip-installed.
+# Usage: pgstream --help | pgstream info | pgstream quickstart | pgstream config
+pgstream = "pgstream._cli:main"
 
 [project.optional-dependencies]
 pgvector = [
