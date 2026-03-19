@@ -1,0 +1,100 @@
+# .github/workflows/publish.yml
+#
+# Publish workflow — triggers on a git tag that matches v* (e.g. v0.2.0).
+#
+# Flow:
+#   1. Run the full unit test suite first — never publish a broken release.
+#      (Integration tests are skipped here because they need wal_level=logical;
+#       they are covered by ci.yml on every push/PR.)
+#   2. Build the sdist + wheel with `uv build`.
+#   3. Publish to PyPI using the PYPI_API_TOKEN repository secret.
+#
+# Prerequisites (one-time setup):
+#   • Go to https://github.com/Kamalesh-Kavin/pgstream/settings/secrets/actions
+#   • Add a secret named PYPI_API_TOKEN with your PyPI API token value.
+#
+# How to release:
+#   git tag v0.2.0
+#   git push origin v0.2.0
+#
+# The tag push fires this workflow automatically.
+
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"  # matches v0.2.0, v1.2.3, v2.0.0-beta.1, etc.
+
+jobs:
+  # ── 1. Run unit tests before publishing ──────────────────────────────────
+  test:
+    name: Unit Tests (pre-publish gate)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        # --all-extras pulls in asyncpg + qdrant-client for full coverage.
+        # The dev group is included automatically by `uv sync`.
+        run: uv sync --all-extras
+
+      - name: Run unit tests
+        # Skip integration tests — they need a live Postgres with wal_level=logical.
+        # Those run in ci.yml on every push/PR.
+        run: uv run pytest tests/test_decoder.py tests/test_stream.py -v -m "not integration"
+
+  # ── 2. Build and publish ──────────────────────────────────────────────────
+  publish:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+    # Only publish after unit tests pass.
+    needs: test
+
+    # Restrict this job to the default environment so secrets are scoped.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pgstream/
+
+    permissions:
+      # Required by PyPI's trusted publisher flow (OIDC) if you switch later.
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # Install only the core package (no dev/test extras needed for building).
+      - name: Install package
+        run: uv sync
+
+      # `uv build` produces dist/pgstream-<version>.tar.gz and
+      # dist/pgstream-<version>-py3-none-any.whl
+      - name: Build sdist and wheel
+        run: uv build
+
+      # Publish using the classic API-token method.
+      # The token is stored in the PYPI_API_TOKEN repository secret.
+      # uv publish reads the token from the UV_PUBLISH_TOKEN env var.
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish
